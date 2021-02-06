@@ -23,15 +23,29 @@ bachelor of science: **Economics**
 *****************************************************
 
 ## further education
+certifications: **Qlik Business Analyst**, **Qlik Data Architectz**  
+qualifications: **Qlik Data Analyst**  
+trainings: **Qlik SAP Connector**, **SAP ABAP Workbench Basics**,  
+ **SAP Fiori & OData**, **SAP SCM521 Conditions & Price Determination**,  
+ **SAP Authorization**, **SAP Support Portal**
 
 *****************************************************
 
 ## professional experience
+**Qlik Data Analyst**  
+**SAP Consultant & Developer**  
 
 *****************************************************
 
 ## skills
+**R**, **QlikSense**, **NPrinting**, **ABAP**,  
+**SQL**, **zTree**, **LaTex/Overleaf**,  
+**MicrosoftOffice**  
 
 *****************************************************
 
-## hobbies
+## interests
+
+**Data Science**, **Data Analytics**, **Data Storytelling**,  
+**Economics**, **Econometrics**, **Statistics**,  
+**Business Intelligence**, **Sports Analytics**  
