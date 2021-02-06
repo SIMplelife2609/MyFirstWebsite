@@ -8,16 +8,16 @@ output:
 
 
 
-**Welcome to my website!**
 
+*******************************************************************
 
-# What it is about
-
+## What it is about
 On this website I want to show you my data science and analytics projects.
-Have a look around and do not hesitate to contact me if you have some comments on the content or want to talk about exciting data stuff.
+Have a look around and do not hesitate to contact me if you have some comments on the content or want to talk about exciting data stuff.  
 
 
-
+## New projects
+At this section I will list all my new content.
 
 
 
