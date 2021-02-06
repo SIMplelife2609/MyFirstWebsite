@@ -1,0 +1,30 @@
+---
+title: "about me"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+*****************************************************
+
+name: Simon Thielen  
+residence: Innsbruck  
+age: 30  
+
+*****************************************************
+
+## education
+
+*****************************************************
+
+## further education
+
+*****************************************************
+
+## professional experience
+
+*****************************************************
+
+## skills
