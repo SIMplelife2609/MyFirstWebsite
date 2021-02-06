@@ -7,15 +7,18 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-*****************************************************
+<br><br>
 
-name: Simon Thielen  
-residence: Innsbruck  
-age: 30  
+name: **Simon Thielen**  
+residence: **Innsbruck**  
+age: **30**  
 
 *****************************************************
 
 ## education
+ph.D (ongoing): **Economics**  
+master of science: **Applied Economics**  
+bachelor of science: **Economics**  
 
 *****************************************************
 
@@ -28,3 +31,7 @@ age: 30
 *****************************************************
 
 ## skills
+
+*****************************************************
+
+## hobbies
