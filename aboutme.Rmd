@@ -7,8 +7,6 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-<br>
-
 name: **Simon Thielen**  
 residence: **Innsbruck**  
 age: **30**  
