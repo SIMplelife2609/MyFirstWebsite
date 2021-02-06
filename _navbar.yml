@@ -3,7 +3,7 @@ title: "My new website"
 type: inverse
 left:
   - text: "About me"
-        href: ./aboutme.html
+    href: ./aboutme.html
   - text: "Project"
     menu:
        - text: "Project part 1"
