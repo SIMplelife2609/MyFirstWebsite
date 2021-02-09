@@ -1,0 +1,71 @@
+---
+title: "the art of soccer economics"
+output:
+  html_document: default
+---
+
+<br>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list=ls())
+season1920 <- read.csv(file="/Users/SimonThielen/Desktop/R/Daten/2021_02_07_Football/2010s/2019_20/de1.csv")
+```
+
+## introduction
+
+For my first project I turn to a familiar topic - soccer. Since my childhood I am passionate about soccer. I played in several teams, trained some kids, tracked nearly every game in the highest european divisions and discussed a lot with friends about games and transfers. So I am pretty sure to know everything about this sport. But do my knowledge hold against the raw data?  
+In this project I want to test some general hypothesis and check I the data confirm or contradict my view on soccer. On the following pages I will first introduce the data, then state my hypothesis and finally check if the data support my hypothesis.  
+
+
+## show me the data 
+I found the datasets on GitHub^[https://github.com/jokecamp/FootballData/tree/master/Germany]. A User provides the results of the german Bundesliga, with matchday number, matchday date, teams and result. I add a factor variable with levels 1 to 3 that states the result as 'Draw', 'HomeVictory' and 'AwayVictory', as well as two integer variables for the goals. At least I add another dummy variable that states if the victory of a team was narrow, means a victory by one goal difference. The summary statistics of the datasets looks as follows. Sadly we could not get much valueable information out of this first summary. Therefore, we now have to perfom some statistics.
+
+```{r summary}
+season1920$Team.1Goals <- as.integer(sub("-.*", "", season1920$FT)) 
+season1920$Team.2Goals <- as.integer(sub("*.-", "", season1920$FT)) 
+season1920$result <- factor(ifelse(season1920$Team.1Goals==season1920$Team.2Goals,0,
+       ifelse(season1920$Team.1Goals>season1920$Team.2Goals,1,2)),levels=c(0,1,2), labels=c("Draw","HomeVictory","AwayVictory"))
+season1920$narrowVict <-factor(ifelse(abs(season1920$Team.1Goals-season1920$Team.2Goals)==1,1,0))
+summary(season1920)
+```
+
+
+## descriptive statistics
+For all that can't remember preciously about the season I reproduce the final table. Using the aggregate function and ordering the result descending gives the following ranking. Like every year the Bayern won the league and qualified for the champions league. Dortmund, Liepzig and Gladbach also qualified for the champions league. Paderborn and Düsseldorf had to go to the 2. Bundesliga and Bremen keep the class in relegation. There is one small mistake in the table. Can you spot and correct it?
+
+```{r finalTable}
+season1920$Team.1Points <- ifelse(season1920$Team.1Goals>season1920$Team.2Goals,3,
+                                  ifelse(season1920$Team.1Goals==season1920$Team.2Goals,
+                                         1,0))
+season1920$Team.2Points <- ifelse(season1920$Team.1Goals<season1920$Team.2Goals,3,
+                                  ifelse(season1920$Team.1Goals==season1920$Team.2Goals,
+                                         1,0))
+finalTableHome <- aggregate(x=season1920[, c(6,7,10)], by=list(season1920$Team.1),
+                            FUN=sum)
+colnames(finalTableHome) <-c("Team", "GoalsScored", "GoalsAgainst", "Points")
+finalTableAway <- aggregate(x=season1920[, c(6,7,11)], by=list(season1920$Team.2),
+                            FUN=sum)
+colnames(finalTableAway) <-c("Team", "GoalsAgainst", "GoalsScored", "Points")
+finalTableAway <- finalTableAway[ ,c(1, 3, 2, 4)] 
+finalTable <- rbind(finalTableHome, finalTableAway)
+finalTable <- aggregate(x=finalTable[, c(2,3,4)], by=list(finalTable$Team),
+                        FUN=sum)
+colnames(finalTable) <-c("Team", "GoalsScored", "GoalsAgainst", "Points")
+finalTable <- finalTable[order(finalTable$Points, decreasing = TRUE),]
+rownames(finalTable) <- 1:18
+print(finalTable)
+```
+
+Now we want to know if their are teams that perform significantly better at home than on the opponents pitch. Therefore, we compare gained points from the home and away table. It seems that teams on the upper half of the table have highly different results at home and away why teams on the margins make nearly the same amount of points at home and away. Only Bremen seems to be an exception from this finding. The question is if this result is by chance or might there be an explanation for this finding. I will load more data, namely the seasons from 2016 until 2018 and look for a similar effect.
+
+```{r finalTableAwayHome}
+colnames(finalTableHome) <-c("Team", "GoalsScored", "GoalsAgainst", "PointsHome")
+colnames(finalTableAway) <-c("Team", "GoalsScored", "GoalsAgainst", "PointsAway")
+finalTable <- merge(finalTable, finalTableHome[,c(1,4)], by="Team")
+finalTable <- merge(finalTable, finalTableAway[,c(1,4)], by="Team")
+finalTable <- finalTable[order(finalTable$Points, decreasing = TRUE),]
+finalTable$Diff <- finalTable$PointsHome - finalTable$PointsAway
+rownames(finalTable) <- 1:18
+print(finalTable[ ,c(1,4,5,6,7)])
+```
