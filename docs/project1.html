@@ -337,8 +337,10 @@ In this project I want to test some general hypothesis and check I the data conf
 <pre class="r"><code>season1920$Team.1Goals &lt;- as.integer(sub(&quot;-.*&quot;, &quot;&quot;, season1920$FT)) 
 season1920$Team.2Goals &lt;- as.integer(sub(&quot;*.-&quot;, &quot;&quot;, season1920$FT)) 
 season1920$result &lt;- factor(ifelse(season1920$Team.1Goals==season1920$Team.2Goals,0,
-       ifelse(season1920$Team.1Goals&gt;season1920$Team.2Goals,1,2)),levels=c(0,1,2), labels=c(&quot;Draw&quot;,&quot;HomeVictory&quot;,&quot;AwayVictory&quot;))
-season1920$narrowVict &lt;-factor(ifelse(abs(season1920$Team.1Goals-season1920$Team.2Goals)==1,1,0))
+       ifelse(season1920$Team.1Goals&gt;season1920$Team.2Goals,1,2)),levels=c(0,1,2),
+       labels=c(&quot;Draw&quot;,&quot;HomeVictory&quot;,&quot;AwayVictory&quot;))
+season1920$narrowVict &lt;-factor(ifelse(abs(season1920$Team.1Goals-season1920$Team.2Goals)==1,
+                                      1,0))
 summary(season1920)</code></pre>
 <pre><code>##      Round          Date              Team.1               FT           
 ##  Min.   : 1.0   Length:306         Length:306         Length:306        
@@ -355,8 +357,8 @@ summary(season1920)</code></pre>
 ##                     3rd Qu.:2.00   3rd Qu.:2.000                               
 ##                     Max.   :8.00   Max.   :6.000</code></pre>
 </div>
-<div id="descriptive-statistics" class="section level2">
-<h2>descriptive statistics</h2>
+<div id="manipulate-the-data" class="section level2">
+<h2>manipulate the data</h2>
 <p>For all that can't remember preciously about the season I reproduce the final table. Using the aggregate function and ordering the result descending gives the following ranking. Like every year the Bayern won the league and qualified for the champions league. Dortmund, Liepzig and Gladbach also qualified for the champions league. Paderborn and Düsseldorf had to go to the 2. Bundesliga and Bremen keep the class in relegation. There is one small mistake in the table. Can you spot and correct it?</p>
 <pre class="r"><code>season1920$Team.1Points &lt;- ifelse(season1920$Team.1Goals&gt;season1920$Team.2Goals,3,
                                   ifelse(season1920$Team.1Goals==season1920$Team.2Goals,
@@ -425,6 +427,151 @@ print(finalTable[ ,c(1,4,5,6,7)])</code></pre>
 ## 16        Werder Bremen     31          9         22  -13
 ## 17   Fortuna Düsseldorf     30         18         12    6
 ## 18      SC Paderborn 07     20          8         12   -4</code></pre>
+</div>
+<div id="add-more-data" class="section level2">
+<h2>add more data</h2>
+<p>The new seasons are loaded from the same gitHub source and contain additional three seasons. The data manipulation is done in the same way as before and the results are stored in one data frame. A new character varible season is introduced to differentiate the seasons.</p>
+<pre class="r"><code>finalTable1920 &lt;- finalTable
+finalTable1920$season &lt;- &quot;19/20&quot;
+rm(finalTable)
+
+for (i in 16:18) {
+  season &lt;- read.csv(file=paste0(&quot;/Users/SimonThielen/Desktop/R/Daten/2021_02_07_Football/2010s/20&quot;,
+                                                 i,&quot;_&quot;,i+1,&quot;/de1.csv&quot;))
+  
+  season$Team.1Goals &lt;- as.integer(sub(&quot;-.*&quot;, &quot;&quot;, season$FT)) 
+  season$Team.2Goals &lt;- as.integer(sub(&quot;*.-&quot;, &quot;&quot;, season$FT)) 
+  season$result &lt;- factor(ifelse(season$Team.1Goals==season$Team.2Goals,0,
+       ifelse(season$Team.1Goals&gt;season$Team.2Goals,1,2)),levels=c(0,1,2),
+       labels=c(&quot;Draw&quot;,&quot;HomeVictory&quot;,&quot;AwayVictory&quot;))
+  season$narrowVict &lt;-factor(ifelse(abs(season$Team.1Goals-season$Team.2Goals)==1,
+                                      1,0))
+
+  season$Team.1Points &lt;- ifelse(season$Team.1Goals&gt;season$Team.2Goals,3,
+                                  ifelse(season$Team.1Goals==season$Team.2Goals,
+                                         1,0))
+  season$Team.2Points &lt;- ifelse(season$Team.1Goals&lt;season$Team.2Goals,3,
+                                  ifelse(season$Team.1Goals==season$Team.2Goals,
+                                         1,0))
+  finalTableHome &lt;- aggregate(x=season[, c(6,7,10)], by=list(season$Team.1),
+                            FUN=sum)
+  colnames(finalTableHome) &lt;-c(&quot;Team&quot;, &quot;GoalsScored&quot;, &quot;GoalsAgainst&quot;, &quot;Points&quot;)
+  finalTableAway &lt;- aggregate(x=season[, c(6,7,11)], by=list(season$Team.2),
+                            FUN=sum)
+  colnames(finalTableAway) &lt;-c(&quot;Team&quot;, &quot;GoalsAgainst&quot;, &quot;GoalsScored&quot;, &quot;Points&quot;)
+  finalTableAway &lt;- finalTableAway[ ,c(1, 3, 2, 4)] 
+  finalTable &lt;- rbind(finalTableHome, finalTableAway)
+  finalTable &lt;- aggregate(x=finalTable[, c(2,3,4)], by=list(finalTable$Team),
+                        FUN=sum)
+  colnames(finalTable) &lt;-c(&quot;Team&quot;, &quot;GoalsScored&quot;, &quot;GoalsAgainst&quot;, &quot;Points&quot;)
+  finalTable &lt;- finalTable[order(finalTable$Points, decreasing = TRUE),]
+  rownames(finalTable) &lt;- 1:18
+  colnames(finalTableHome) &lt;-c(&quot;Team&quot;, &quot;GoalsScored&quot;, &quot;GoalsAgainst&quot;, &quot;PointsHome&quot;)
+  colnames(finalTableAway) &lt;-c(&quot;Team&quot;, &quot;GoalsScored&quot;, &quot;GoalsAgainst&quot;, &quot;PointsAway&quot;)
+  finalTable &lt;- merge(finalTable, finalTableHome[,c(1,4)], by=&quot;Team&quot;)
+  finalTable &lt;- merge(finalTable, finalTableAway[,c(1,4)], by=&quot;Team&quot;)
+  finalTable &lt;- finalTable[order(finalTable$Points, decreasing = TRUE),]
+  finalTable$Diff &lt;- finalTable$PointsHome - finalTable$PointsAway
+  rownames(finalTable) &lt;- 1:18
+  finalTable$season &lt;- paste0(i,&quot;/&quot;,i+1)
+  assign(paste0(&quot;finalTable&quot;,i,i+1),finalTable) 
+  
+  rm(season, finalTable, finalTableHome, finalTableAway)
+}
+
+finalTable &lt;- rbind(finalTable1617, finalTable1718, finalTable1819, finalTable1920)</code></pre>
+</div>
+<div id="set-up-some-hypothesis" class="section level2">
+<h2>set up some hypothesis</h2>
+<p>Now that the data is loaded and transformed I can state some hypothesis to test on the data. The first hypothesis I already mentioned in the previous section is about the correlation between the rank of a team in the final table and it's different outcomes at home and away. The hypothesis is therefore:</p>
+<p><strong>H0: The rank in the table is independent of the difference between the outcome at home and away</strong><br />
+<strong>H1: It is not</strong></p>
+<p>The second Hypothesis I want to adress is if there is an effect is it stronger on the midfield of the table than on the edges?</p>
+<p><strong>H0: The differents in home and away results is independet of the in the final table the team end up</strong><br />
+<strong>H1: It is not</strong></p>
+</div>
+<div id="descriptive-statistics" class="section level2">
+<h2>descriptive statistics</h2>
+<p>Before I do some specific statistics on the hypothesis, I will have a quick look over the general data. The summary table shows the 5-point-summary of the variable Diff. with a max of 25, which means 25 point more at home than away and a min of -13, which mean 13 points more away than at home. The median at 7 is slidly lower than the mean with 7.25 which suggest a skewness to the right, which can be observed on the histogram plot. The standard deviation is 7.66 by a rage of 38, with can be interpreted as a moderate spread of the data. The boxplots show that there are hughe differences between the teams over the different seasons, but there are also some teams that always have differences about the same amount and this is mostly around zero. Sometimes there are teams that have seem to have huge and constant differences, like Darmstadt or Paderborn, but this is due to the effect that they only stayed in the first devision for one season. This can be better observed in the time series plot where these clubs only have one dot. Also the graphs in this plot cross each other very often which is a sign that the differences are not constant over time. In the next section we now dig deeper into the hypotheses testing.</p>
+<pre class="r"><code>summary(finalTable)</code></pre>
+<pre><code>##      Team            GoalsScored      GoalsAgainst       Points     
+##  Length:72          Min.   : 26.00   Min.   :22.00   Min.   :19.00  
+##  Class :character   1st Qu.: 37.75   1st Qu.:43.75   1st Qu.:36.75  
+##  Mode  :character   Median : 47.50   Median :52.00   Median :44.50  
+##                     Mean   : 51.21   Mean   :51.21   Mean   :46.86  
+##                     3rd Qu.: 61.00   3rd Qu.:59.25   3rd Qu.:55.00  
+##                     Max.   :100.00   Max.   :74.00   Max.   :84.00  
+##    PointsHome      PointsAway         Diff           season         
+##  Min.   : 8.00   Min.   : 3.00   Min.   :-13.00   Length:72         
+##  1st Qu.:21.75   1st Qu.:14.00   1st Qu.:  2.75   Class :character  
+##  Median :27.00   Median :19.00   Median :  7.00   Mode  :character  
+##  Mean   :27.06   Mean   :19.81   Mean   :  7.25                     
+##  3rd Qu.:31.00   3rd Qu.:25.25   3rd Qu.: 13.00                     
+##  Max.   :44.00   Max.   :41.00   Max.   : 25.00</code></pre>
+<pre class="r"><code>sd(finalTable$Diff)</code></pre>
+<pre><code>## [1] 7.663247</code></pre>
+<pre class="r"><code>hist(finalTable$Diff, main=&quot;Distribution Differences Home/Away&quot;) </code></pre>
+<p><img src="project1_files/figure-html/descriptiveStatistics1-1.png" width="672" /></p>
+<pre class="r"><code>plot(as.factor(finalTable$Team), finalTable$Diff, las=3)</code></pre>
+<p><img src="project1_files/figure-html/descriptiveStatistics1-2.png" width="672" /></p>
+<pre class="r"><code>ggplot(data = finalTable, aes(x = factor(season), y = Diff, color = Team)) +       
+  geom_line(aes(group = Team)) + geom_point()</code></pre>
+<p><img src="project1_files/figure-html/descriptiveStatistics1-3.png" width="672" /></p>
+</div>
+<div id="hypothesis-testing" class="section level2">
+<h2>hypothesis testing</h2>
+<pre class="r"><code>kruskal.test(finalTable$Team, finalTable$Diff) # robust varianz analysis</code></pre>
+<pre><code>## 
+##  Kruskal-Wallis rank sum test
+## 
+## data:  finalTable$Team and finalTable$Diff
+## Kruskal-Wallis chi-squared = 30.33, df = 27, p-value = 0.2995</code></pre>
+<pre class="r"><code>log1 &lt;- glm(Diff ~ Team, data=finalTable)
+summary(log1)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = Diff ~ Team, data = finalTable)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -15.000   -2.500    0.125    2.812   17.000  
+## 
+## Coefficients:
+##                          Estimate Std. Error t value Pr(&gt;|t|)  
+## (Intercept)               10.3333     4.0540   2.549   0.0141 *
+## Team1. FC Nürnberg         2.6667     8.1081   0.329   0.7437  
+## Team1. FC Union Berlin     2.6667     8.1081   0.329   0.7437  
+## Team1. FSV Mainz 05       -1.0833     5.3630  -0.202   0.8408  
+## TeamBayer 04 Leverkusen   -9.5833     5.3630  -1.787   0.0803 .
+## TeamBayern München        -6.8333     5.3630  -1.274   0.2087  
+## TeamBor. Mönchengladbach  -0.8333     5.3630  -0.155   0.8772  
+## TeamBorussia Dortmund      0.6667     5.3630   0.124   0.9016  
+## TeamEintracht Frankfurt   -1.8333     5.3630  -0.342   0.7340  
+## TeamFC Augsburg           -6.0833     5.3630  -1.134   0.2623  
+## TeamFC Ingolstadt 04      -8.3333     8.1081  -1.028   0.3092  
+## TeamFC Schalke 04         -4.3333     5.3630  -0.808   0.4231  
+## TeamFortuna Düsseldorf    -2.3333     6.4100  -0.364   0.7174  
+## TeamHamburger SV           5.1667     6.4100   0.806   0.4242  
+## TeamHannover 96            2.6667     6.4100   0.416   0.6793  
+## TeamHertha BSC            -2.3333     5.3630  -0.435   0.6655  
+## TeamRB Leipzig            -6.3333     5.3630  -1.181   0.2434  
+## TeamSC Freiburg            4.1667     5.3630   0.777   0.4410  
+## TeamSC Paderborn 07      -14.3333     8.1081  -1.768   0.0835 .
+## TeamSV Darmstadt 98        6.6667     8.1081   0.822   0.4150  
+## TeamTSG 1899 Hoffenheim   -3.3333     5.3630  -0.622   0.5372  
+## TeamVfB Stuttgart          6.1667     6.4100   0.962   0.3409  
+## TeamVfL Wolfsburg        -12.3333     5.3630  -2.300   0.0259 *
+## TeamWerder Bremen         -8.5833     5.3630  -1.600   0.1161  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for gaussian family taken to be 49.30556)
+## 
+##     Null deviance: 4169.5  on 71  degrees of freedom
+## Residual deviance: 2366.7  on 48  degrees of freedom
+## AIC: 505.79
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
 </div>
 <div class="footnotes">
 <hr />
