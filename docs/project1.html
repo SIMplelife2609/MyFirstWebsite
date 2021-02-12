@@ -512,7 +512,9 @@ finalTable &lt;- rbind(finalTable1617, finalTable1718, finalTable1819, finalTabl
 <pre><code>## [1] 7.663247</code></pre>
 <pre class="r"><code>hist(finalTable$Diff, main=&quot;Distribution Differences Home/Away&quot;) </code></pre>
 <p><img src="project1_files/figure-html/descriptiveStatistics1-1.png" width="672" /></p>
-<pre class="r"><code>plot(as.factor(finalTable$Team), finalTable$Diff, las=3)</code></pre>
+<pre class="r"><code>plot(as.factor(finalTable$Team), finalTable$Diff, las=3)
+
+library(&quot;ggplot2&quot;)</code></pre>
 <p><img src="project1_files/figure-html/descriptiveStatistics1-2.png" width="672" /></p>
 <pre class="r"><code>ggplot(data = finalTable, aes(x = factor(season), y = Diff, color = Team)) +       
   geom_line(aes(group = Team)) + geom_point()</code></pre>
@@ -520,7 +522,8 @@ finalTable &lt;- rbind(finalTable1617, finalTable1718, finalTable1819, finalTabl
 </div>
 <div id="hypothesis-testing" class="section level2">
 <h2>hypothesis testing</h2>
-<pre class="r"><code>kruskal.test(finalTable$Team, finalTable$Diff) # robust varianz analysis</code></pre>
+<p>To test the hypothesis I first conduct a robust variance analysis with the kruskal test. With a p-value of 0.2996 it is not possible to reject the Nullhypothesis and we can therefore not assume an effect that is different from zero. An logit regression also failed to find significant effects. The problem might be the small amount of datapoints I have for each team. Therefore I try</p>
+<pre class="r"><code>kruskal.test(finalTable$Team, finalTable$Diff) </code></pre>
 <pre><code>## 
 ##  Kruskal-Wallis rank sum test
 ## 

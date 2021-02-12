@@ -9,8 +9,13 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-#install.packages("ggplot2") 
-library("ggplot2")
+
+packages <- c("ggplot2")
+installed_packages <- packages %in% rownames(installed.packages())
+if (any(installed_packages == FALSE)) {
+  install.packages(packages[!installed_packages])
+}
+
 rm(list=ls())
 season1920 <- read.csv(file="/Users/SimonThielen/Desktop/R/Daten/2021_02_07_Football/2010s/2019_20/de1.csv")
 ```
@@ -26,6 +31,7 @@ In this project I want to test some general hypothesis and check I the data conf
 I found the datasets on GitHub^[https://github.com/jokecamp/FootballData/tree/master/Germany]. A User provides the results of the german Bundesliga, with matchday number, matchday date, teams and result. I add a factor variable with levels 1 to 3 that states the result as 'Draw', 'HomeVictory' and 'AwayVictory', as well as two integer variables for the goals. At least I add another dummy variable that states if the victory of a team was narrow, means a victory by one goal difference. The summary statistics of the datasets looks as follows. Sadly we could not get much valueable information out of this first summary. Therefore, we now have to perfom some statistics.
 
 ```{r summary}
+
 season1920$Team.1Goals <- as.integer(sub("-.*", "", season1920$FT)) 
 season1920$Team.2Goals <- as.integer(sub("*.-", "", season1920$FT)) 
 season1920$result <- factor(ifelse(season1920$Team.1Goals==season1920$Team.2Goals,0,
@@ -161,6 +167,7 @@ hist(finalTable$Diff, main="Distribution Differences Home/Away")
 
 plot(as.factor(finalTable$Team), finalTable$Diff, las=3)
 
+library("ggplot2")
 ggplot(data = finalTable, aes(x = factor(season), y = Diff, color = Team)) +       
   geom_line(aes(group = Team)) + geom_point()
 
@@ -169,8 +176,9 @@ ggplot(data = finalTable, aes(x = factor(season), y = Diff, color = Team)) +
 
 ## hypothesis testing
 
+To test the hypothesis I first conduct a robust variance analysis with the kruskal test. With a p-value of 0.2996 it is not possible to reject the Nullhypothesis and we can therefore not assume an effect that is different from zero. An logit regression also failed to find significant effects. The problem might be the small amount of datapoints I have for each team. Therefore I try 
 ```{r hypothesisTesting1}
-kruskal.test(finalTable$Team, finalTable$Diff) # robust varianz analysis
+kruskal.test(finalTable$Team, finalTable$Diff) 
 log1 <- glm(Diff ~ Team, data=finalTable)
 summary(log1)
 ```
