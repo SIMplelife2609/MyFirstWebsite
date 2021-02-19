@@ -479,7 +479,8 @@ for (i in 16:18) {
   rm(season, finalTable, finalTableHome, finalTableAway)
 }
 
-finalTable &lt;- rbind(finalTable1617, finalTable1718, finalTable1819, finalTable1920)</code></pre>
+finalTable &lt;- rbind(finalTable1617, finalTable1718, finalTable1819, finalTable1920)
+finalTable$final &lt;-1:18</code></pre>
 </div>
 <div id="set-up-some-hypothesis" class="section level2">
 <h2>set up some hypothesis</h2>
@@ -507,7 +508,14 @@ finalTable &lt;- rbind(finalTable1617, finalTable1718, finalTable1819, finalTabl
 ##  Median :27.00   Median :19.00   Median :  7.00   Mode  :character  
 ##  Mean   :27.06   Mean   :19.81   Mean   :  7.25                     
 ##  3rd Qu.:31.00   3rd Qu.:25.25   3rd Qu.: 13.00                     
-##  Max.   :44.00   Max.   :41.00   Max.   : 25.00</code></pre>
+##  Max.   :44.00   Max.   :41.00   Max.   : 25.00                     
+##      final     
+##  Min.   : 1.0  
+##  1st Qu.: 5.0  
+##  Median : 9.5  
+##  Mean   : 9.5  
+##  3rd Qu.:14.0  
+##  Max.   :18.0</code></pre>
 <pre class="r"><code>sd(finalTable$Diff)</code></pre>
 <pre><code>## [1] 7.663247</code></pre>
 <pre class="r"><code>hist(finalTable$Diff, main=&quot;Distribution Differences Home/Away&quot;) </code></pre>
@@ -522,7 +530,7 @@ library(&quot;ggplot2&quot;)</code></pre>
 </div>
 <div id="hypothesis-testing" class="section level2">
 <h2>hypothesis testing</h2>
-<p>To test the hypothesis I first conduct a robust variance analysis with the kruskal test. With a p-value of 0.2996 it is not possible to reject the Nullhypothesis and we can therefore not assume an effect that is different from zero. An logit regression also failed to find significant effects. The problem might be the small amount of datapoints I have for each team. Therefore I try</p>
+<p>To test the hypothesis I first conduct a robust variance analysis with the kruskal test. With a p-value of 0.2996 it is not possible to reject the Nullhypothesis and we can therefore not assume an effect that is different from zero. An logit regression also failed to find significant effects. The problem might be the small amount of datapoints I have for each team. Therefore I intersect the final tables in 4 sections. The first section includes position 1 to 4 (these are the authorize to play champions league), the section sectionen with position 5 to 9, the third with positions 10 to 14 and the last with 15 to 18. Now I try the same analysis again and look for significant results. This is equivalent with our second hypothesis, that the area a team ends in is important. And again I do not fina a significant effect.</p>
 <pre class="r"><code>kruskal.test(finalTable$Team, finalTable$Diff) </code></pre>
 <pre><code>## 
 ##  Kruskal-Wallis rank sum test
@@ -575,6 +583,38 @@ summary(log1)</code></pre>
 ## AIC: 505.79
 ## 
 ## Number of Fisher Scoring iterations: 2</code></pre>
+<pre class="r"><code>finalTable$section &lt;- ifelse(finalTable$final&lt;=4, 1,
+                             ifelse(finalTable$final&lt;=9,2,
+                                 ifelse(finalTable$final&lt;=14,3,4
+                                        )))
+log2 &lt;- glm(Diff ~ section, data=finalTable)
+summary(log2)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = Diff ~ section, data = finalTable)
+## 
+## Deviance Residuals: 
+##      Min        1Q    Median        3Q       Max  
+## -20.4146   -4.5274   -0.1951    5.6128   17.8049  
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)   
+## (Intercept)   6.9756     2.3165   3.011  0.00362 **
+## section       0.1098     0.8522   0.129  0.89789   
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for gaussian family taken to be 59.55017)
+## 
+##     Null deviance: 4169.5  on 71  degrees of freedom
+## Residual deviance: 4168.5  on 70  degrees of freedom
+## AIC: 502.55
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
+</div>
+<div id="conclusion" class="section level2">
+<h2>conclusion</h2>
+<p>In this project I tried to find support signs for the hypothesis that the difference beetwen the performance of a soccer team at home and away has an effect on their position at the end of a season. With the presented data it was not possible to identify such effects. Next steps could be extending the data by more seasons or trying other table sections, for example splitting the table only in two sides or in a middle and edge part.</p>
 </div>
 <div class="footnotes">
 <hr />

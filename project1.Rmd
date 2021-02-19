@@ -138,6 +138,7 @@ for (i in 16:18) {
 }
 
 finalTable <- rbind(finalTable1617, finalTable1718, finalTable1819, finalTable1920)
+finalTable$final <-1:18
 ```
   
   
@@ -176,9 +177,23 @@ ggplot(data = finalTable, aes(x = factor(season), y = Diff, color = Team)) +
 
 ## hypothesis testing
 
-To test the hypothesis I first conduct a robust variance analysis with the kruskal test. With a p-value of 0.2996 it is not possible to reject the Nullhypothesis and we can therefore not assume an effect that is different from zero. An logit regression also failed to find significant effects. The problem might be the small amount of datapoints I have for each team. Therefore I try 
+To test the hypothesis I first conduct a robust variance analysis with the kruskal test. With a p-value of 0.2996 it is not possible to reject the Nullhypothesis and we can therefore not assume an effect that is different from zero. An logit regression also failed to find significant effects. The problem might be the small amount of datapoints I have for each team. Therefore I intersect the final tables in 4 sections. The first section includes position 1 to 4 (these are the authorize to play champions league), the section sectionen with position 5 to 9, the third with positions 10 to 14 and the last with 15 to 18. Now I try the same analysis again and look for significant results. This is equivalent with our second hypothesis, that the area a team ends in is important. And again I do not fina a significant effect.
 ```{r hypothesisTesting1}
 kruskal.test(finalTable$Team, finalTable$Diff) 
 log1 <- glm(Diff ~ Team, data=finalTable)
 summary(log1)
 ```
+
+```{r hypothesisTesting2}
+finalTable$section <- ifelse(finalTable$final<=4, 1,
+                             ifelse(finalTable$final<=9,2,
+                                 ifelse(finalTable$final<=14,3,4
+                                        )))
+log2 <- glm(Diff ~ section, data=finalTable)
+summary(log2)
+```
+
+
+## conclusion
+In this project I tried to find support signs for the hypothesis that the difference beetwen the performance of a soccer team at home and away has an effect on their position at the end of a season. With the presented data it was not possible to identify such effects. Next steps could be extending the data by more seasons or trying other table sections, for example splitting the table only in two sides or in a middle and edge part.
+
