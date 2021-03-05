@@ -1,1 +1,1 @@
-# SIMpleecon
+# econ
